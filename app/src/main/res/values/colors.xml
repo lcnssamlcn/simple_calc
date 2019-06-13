@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+    <color name="display_bg">#333333</color>
+    <color name="display_fg">#D6E6E5</color>
+    <color name="keypad_bg">#888888</color>
+    <color name="btn_fg">#222222</color>
+    <color name="btn_fg_light">#DDDDDD</color>
+    <color name="btn_bg_op">#AA0E48</color>
+    <color name="btn_bg_general">#958C0A</color>
+    <color name="btn_bg_num">#3D769E</color>
+    <color name="btn_border">#AAAAAA</color>
+</resources>
