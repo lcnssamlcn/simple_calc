@@ -22,5 +22,6 @@
     <string name="btn_ans">Ans</string>
     <string name="btn_0">0</string>
     <string name="btn_dot">.</string>
+    <string name="btn_del">DEL</string>
     <string name="btn_equal">=</string>
 </resources>

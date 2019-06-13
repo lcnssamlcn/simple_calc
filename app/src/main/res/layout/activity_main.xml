@@ -53,15 +53,14 @@
         android:text="@string/btn_right" />
 
     <Button
+        android:id="@+id/btn_del"
+        style="@style/btn.general"
+        android:text="@string/btn_del" />
+
+    <Button
         android:id="@+id/btn_left_paren"
         style="@style/btn.op"
         android:text="@string/btn_left_paren"
-        android:onClick="clickOp" />
-
-    <Button
-        android:id="@+id/btn_right_paren"
-        style="@style/btn.op"
-        android:text="@string/btn_right_paren"
         android:onClick="clickOp" />
 
     <Button
@@ -89,9 +88,9 @@
         android:onClick="clickOp" />
 
     <Button
-        android:id="@+id/btn_div"
+        android:id="@+id/btn_right_paren"
         style="@style/btn.op"
-        android:text="@string/btn_div"
+        android:text="@string/btn_right_paren"
         android:onClick="clickOp" />
 
     <Button
@@ -113,9 +112,9 @@
         android:onClick="clickNum" />
 
     <Button
-        android:id="@+id/btn_minus"
+        android:id="@+id/btn_div"
         style="@style/btn.op"
-        android:text="@string/btn_minus"
+        android:text="@string/btn_div"
         android:onClick="clickOp" />
 
 
@@ -144,10 +143,9 @@
         android:onClick="clickNum" />
 
     <Button
-        android:id="@+id/btn_plus"
+        android:id="@+id/btn_minus"
         style="@style/btn.op"
-        app:layout_rowSpan="2"
-        android:text="@string/btn_plus"
+        android:text="@string/btn_minus"
         android:onClick="clickOp" />
 
     <Button
@@ -167,6 +165,12 @@
         android:id="@+id/btn_dot"
         style="@style/btn.op"
         android:text="@string/btn_dot"
+        android:onClick="clickOp" />
+
+    <Button
+        android:id="@+id/btn_plus"
+        style="@style/btn.op"
+        android:text="@string/btn_plus"
         android:onClick="clickOp" />
 
     <Button

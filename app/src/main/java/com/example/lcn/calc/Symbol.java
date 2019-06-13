@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * all symbols that are supported in this calculator
+ * all symbols that are renderable in the equation display
  * @author lcn
  */
 public enum Symbol {

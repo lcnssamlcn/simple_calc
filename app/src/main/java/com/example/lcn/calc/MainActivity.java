@@ -208,6 +208,34 @@ public class MainActivity extends AppCompatActivity {
                 MainActivity.this.eqt.setText(sb.toString());
             }
         });
+        Button btnDel = (Button) findViewById(R.id.btn_del);
+        btnDel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int cursorPos = getCursorPos();
+                if (cursorPos == -1) {
+                    resetDisplay();
+                    return;
+                }
+                if (cursorPos == 0)
+                    return;
+                Symbol sym = getPrevSymbol();
+                if (sym == null) {
+                    resetDisplay();
+                    return;
+                }
+
+                String eqtStr = MainActivity.this.eqt.getText().toString();
+                StringBuilder sb = new StringBuilder();
+                int end = cursorPos - sym.getRepr().length();
+                if (end > 0)
+                    sb.append(eqtStr.substring(0, end));
+                sb.append(MainActivity.CURSOR);
+                if (cursorPos + 1 < eqtStr.length())
+                    sb.append(eqtStr.substring(cursorPos + 1));
+                MainActivity.this.eqt.setText(sb.toString());
+            }
+        });
     }
 
     /**
