@@ -23,7 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="start"
-            android:text="(5 + 8) / 2"
+            android:text=""
             android:textSize="16sp"
             android:textColor="@color/display_fg" />
         <TextView
@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
             android:gravity="end"
-            android:text="1222.73"
+            android:text=""
             android:textSize="32sp"
             android:textColor="@color/display_fg" />
     </LinearLayout>
@@ -55,99 +55,119 @@
     <Button
         android:id="@+id/btn_left_paren"
         style="@style/btn.op"
-        android:text="@string/btn_left_paren" />
+        android:text="@string/btn_left_paren"
+        android:onClick="clickOp" />
 
     <Button
         android:id="@+id/btn_right_paren"
         style="@style/btn.op"
-        android:text="@string/btn_right_paren" />
+        android:text="@string/btn_right_paren"
+        android:onClick="clickOp" />
 
     <Button
         android:id="@+id/btn_7"
         style="@style/btn.num"
-        android:text="@string/btn_7" />
+        android:text="@string/btn_7"
+        android:onClick="clickNum" />
 
     <Button
         android:id="@+id/btn_8"
         style="@style/btn.num"
-        android:text="@string/btn_8" />
+        android:text="@string/btn_8"
+        android:onClick="clickNum" />
 
     <Button
         android:id="@+id/btn_9"
         style="@style/btn.num"
-        android:text="@string/btn_9" />
+        android:text="@string/btn_9"
+        android:onClick="clickNum" />
 
     <Button
         android:id="@+id/btn_mul"
         style="@style/btn.op"
-        android:text="@string/btn_mul" />
+        android:text="@string/btn_mul"
+        android:onClick="clickOp" />
 
     <Button
         android:id="@+id/btn_div"
         style="@style/btn.op"
-        android:text="@string/btn_div" />
+        android:text="@string/btn_div"
+        android:onClick="clickOp" />
 
     <Button
         android:id="@+id/btn_4"
         style="@style/btn.num"
-        android:text="@string/btn_4" />
+        android:text="@string/btn_4"
+        android:onClick="clickNum" />
 
     <Button
         android:id="@+id/btn_5"
         style="@style/btn.num"
-        android:text="@string/btn_5" />
+        android:text="@string/btn_5"
+        android:onClick="clickNum" />
 
     <Button
         android:id="@+id/btn_6"
         style="@style/btn.num"
-        android:text="@string/btn_6" />
+        android:text="@string/btn_6"
+        android:onClick="clickNum" />
 
     <Button
         android:id="@+id/btn_minus"
         style="@style/btn.op"
-        android:text="@string/btn_minus" />
+        android:text="@string/btn_minus"
+        android:onClick="clickOp" />
+
 
     <Button
         android:id="@+id/btn_exp"
         style="@style/btn.op"
-        android:text="" />
+        android:text=""
+        android:onClick="clickOp" />
 
     <Button
         android:id="@+id/btn_1"
         style="@style/btn.num"
-        android:text="@string/btn_1" />
+        android:text="@string/btn_1"
+        android:onClick="clickNum" />
 
     <Button
         android:id="@+id/btn_2"
         style="@style/btn.num"
-        android:text="@string/btn_2" />
+        android:text="@string/btn_2"
+        android:onClick="clickNum" />
 
     <Button
         android:id="@+id/btn_3"
         style="@style/btn.num"
-        android:text="@string/btn_3" />
+        android:text="@string/btn_3"
+        android:onClick="clickNum" />
 
     <Button
         android:id="@+id/btn_plus"
         style="@style/btn.op"
         app:layout_rowSpan="2"
-        android:text="@string/btn_plus" />
+        android:text="@string/btn_plus"
+        android:onClick="clickOp" />
 
     <Button
         android:id="@+id/btn_ans"
         style="@style/btn.op"
-        android:text="@string/btn_ans" />
+        android:text="@string/btn_ans"
+        android:onClick="clickOp" />
 
     <Button
         android:id="@+id/btn_0"
         style="@style/btn.num"
         app:layout_columnSpan="2"
-        android:text="@string/btn_0" />
+        android:text="@string/btn_0"
+        android:onClick="clickNum" />
 
     <Button
         android:id="@+id/btn_dot"
         style="@style/btn.op"
-        android:text="@string/btn_dot" />
+        android:text="@string/btn_dot"
+        android:onClick="clickOp" />
 
     <Button
         android:id="@+id/btn_equal"

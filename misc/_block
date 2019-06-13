@@ -1,0 +1,23 @@
+// ----- MainActivity#initBtnGeneral() -----
+// left nav
+int cursorPos = MainActivity.this.getCursorPos();
+StringBuilder sb = new StringBuilder();
+if (cursorPos - 1 != 0)
+    sb.append(eqtStr.substring(0, cursorPos - 1));
+sb.append(MainActivity.CURSOR);
+sb.append(eqtStr.charAt(cursorPos - 1));
+if (cursorPos + 1 < eqtStr.length())
+    sb.append(eqtStr.substring(cursorPos + 1));
+MainActivity.this.eqt.setText(sb.toString());
+
+// right nav
+int cursorPos = MainActivity.this.getCursorPos();
+StringBuilder sb = new StringBuilder();
+if (cursorPos > 0)
+    sb.append(eqtStr.substring(0, cursorPos));
+sb.append(eqtStr.charAt(cursorPos + 1));
+sb.append(MainActivity.CURSOR);
+if (cursorPos + 2 < eqtStr.length())
+    sb.append(eqtStr.substring(cursorPos + 2));
+MainActivity.this.eqt.setText(sb.toString());
+// -----------------------------------------
