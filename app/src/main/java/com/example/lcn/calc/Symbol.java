@@ -61,7 +61,7 @@ public enum Symbol {
     /**
      * multiplication operator
      */
-    SYM_MUL("\u00D7", R.id.btn_mul),
+    SYM_MUL("\u00D7", R.id.btn_mul, "*"),
     /**
      * division operator
      */
@@ -95,15 +95,40 @@ public enum Symbol {
      * symbol button id
      */
     private int id;
+    /**
+     * string representation that can be interpreted by the
+     * {@link org.mariuszgromada.math.mxparser.Expression Expression}. It is only used when the
+     * {@link org.mariuszgromada.math.mxparser.Expression Expression} cannot interpret {@link #repr},
+     * the representation in the {@link MainActivity#eqt equation display}. If the {@link #repr}
+     * can be interpreted, it will be left as <code>null</code>.
+     */
+    private String exprRepr;
 
     /**
-     * create a new math symbol
-     * @param repr representation in the {@link MainActivity#eqt equation display}.
-     * @param id symbol button id
+     * create a new math symbol which can be interpreted by
+     * {@link org.mariuszgromada.math.mxparser.Expression Expression}.
+     * @param repr string representation in the {@link MainActivity#eqt equation display}.
+     * @param id symbol button id in the keypad display
      */
     Symbol(String repr, int id) {
         this.repr = repr;
         this.id = id;
+        this.exprRepr = null;
+    }
+
+    /**
+     * create a new math symbol which cannot be directly interpreted by
+     * {@link org.mariuszgromada.math.mxparser.Expression Expression} from its representation
+     * {@link #repr} in the {@link MainActivity#eqt equation display}.
+     * @param repr string representation in the equation display
+     * @param id symbol button id in the keypad display
+     * @param exprRepr string representation that can be interpreted by the
+     *                 {@link org.mariuszgromada.math.mxparser.Expression Expression}.
+     */
+    Symbol(String repr, int id, String exprRepr) {
+        this.repr = repr;
+        this.id = id;
+        this.exprRepr = exprRepr;
     }
 
     /**
@@ -118,6 +143,33 @@ public enum Symbol {
      */
     public int getID() {
         return this.id;
+    }
+
+    /**
+     * @return the string representation that can be interpreted by the
+     *         {@link org.mariuszgromada.math.mxparser.Expression Expression}.
+     * @see #exprRepr
+     */
+    public String getExprRepr() {
+        return this.exprRepr;
+    }
+
+    /**
+     * check if the symbol is a digit
+     * @param sym symbol to check
+     * @return true if so; otherwise false.
+     */
+    public static boolean isNum(Symbol sym) {
+        return sym.equals(Symbol.SYM_0) || sym.equals(Symbol.SYM_1) || sym.equals(Symbol.SYM_2) || sym.equals(Symbol.SYM_3) || sym.equals(Symbol.SYM_4) || sym.equals(Symbol.SYM_5) || sym.equals(Symbol.SYM_6) || sym.equals(Symbol.SYM_7) || sym.equals(Symbol.SYM_8) || sym.equals(Symbol.SYM_9);
+    }
+
+    /**
+     * check if the symbol is an operator
+     * @param sym symbol to check
+     * @return true if so; otherwise false.
+     */
+    public static boolean isOp(Symbol sym) {
+        return sym.equals(Symbol.SYM_LEFT_PAREN) || sym.equals(Symbol.SYM_RIGHT_PAREN) || sym.equals(Symbol.SYM_MUL) || sym.equals(Symbol.SYM_DIV) || sym.equals(Symbol.SYM_PLUS) || sym.equals(Symbol.SYM_MINUS) || sym.equals(Symbol.SYM_EXP) || sym.equals(Symbol.SYM_DOT);
     }
 
     /**
@@ -146,5 +198,22 @@ public enum Symbol {
             }
         });
         return sortedSymbols;
+    }
+
+    /**
+     * convert the equation in the equation display to a math expression which can be interpreted by
+     * {@link org.mariuszgromada.math.mxparser.Expression Expression}.
+     * @param eqt equation in the equation display
+     * @return the math expression which can be interpreted by
+     *         {@link org.mariuszgromada.math.mxparser.Expression Expression}.
+     */
+    public static String toExpr(String eqt) {
+        StringBuilder sb = new StringBuilder(eqt);
+        for (Symbol sym : Symbol.values()) {
+            if (sym.getExprRepr() != null) {
+                sb.replace(0, sb.length(), sb.toString().replace(sym.getRepr(), sym.getExprRepr()));
+            }
+        }
+        return sb.toString();
     }
 }
