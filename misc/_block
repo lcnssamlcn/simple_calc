@@ -21,3 +21,66 @@ if (cursorPos + 2 < eqtStr.length())
     sb.append(eqtStr.substring(cursorPos + 2));
 MainActivity.this.eqt.setText(sb.toString());
 // -----------------------------------------
+
+// ----- MainActivity#isMovedLeft() -----
+public boolean isMovedLeft() {
+    boolean result = this.movedLeft;
+    if (result) {
+        this.movedLeft = false;
+    }
+    return result;
+}
+// --------------------------------------
+
+// ----- MainActivity#resetOpFlags() -----
+public void resetOpFlags() {
+    this.inserted = false;
+    this.deleted = false;
+    this.movedLeft = false;
+    this.movedRight = false;
+}
+// ---------------------------------------
+
+// ----- EqtTextWatcher#onTextChanged() -----
+// handling cursor at the end pos
+if (isOpIns() || isOpDel()) {
+    int cursorPos = EqtBuilder.getCursorPos(this.eqt);
+    if (cursorPos >= MainActivity.MAX_EQT_DISPLAY_WIDTH) {
+        this.window[1] = cursorPos;
+        this.window[0] = cursorPos - MainActivity.MAX_EQT_DISPLAY_WIDTH + 1;
+    }
+    else {
+        this.window[0] = 0;
+        this.window[1] = MainActivity.MAX_EQT_DISPLAY_WIDTH - 1;
+    }
+}
+// ------------------------------------------
+
+// ----- MainActivity#getCursorPos() -----
+/**
+ * @return the current cursor pos in equation display
+ */
+public int getCursorPos() {
+    return EqtBuilder.getCursorPos(this.eqt.getText().toString());
+}
+// ---------------------------------------
+
+// ----- MainActivity#getPrevSymbol() -----
+/**
+ * @return the previous symbol of the cursor in the equation display. It must <b>NEVER</b> return
+ *         null.
+ */
+public Symbol getPrevSymbol() {
+    return EqtBuilder.getPrevSymbol(MainActivity.this.eqt.getText().toString());
+}
+// ----------------------------------------
+
+// ----- MainActivity#getNextSymbol() -----
+/**
+ * @return the next symbol of the cursor in the equation display. It must <b>NEVER</b> return
+ *         null.
+ */
+public Symbol getNextSymbol() {
+    return EqtBuilder.getNextSymbol(MainActivity.this.eqt.getText().toString());
+}
+// ----------------------------------------

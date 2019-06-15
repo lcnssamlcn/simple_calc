@@ -72,7 +72,7 @@ public class EqtSolver {
      * @return new string that has the cursor removed
      */
     public String removeCursor(String eqt) {
-        StringBuilder sb = new StringBuilder(eqt);
+        StringBuffer sb = new StringBuffer(eqt);
         int cursorPos = sb.indexOf(MainActivity.CURSOR);
         if (cursorPos != -1)
             sb.deleteCharAt(cursorPos);
@@ -85,7 +85,7 @@ public class EqtSolver {
      * @return true if so; otherwsie false.
      */
     public boolean hasSyntaxError(final String eqt) {
-        StringBuilder sb = new StringBuilder(eqt);
+        StringBuffer sb = new StringBuffer(eqt);
         sb.replace(0, sb.length(), removeCursor(sb.toString()));
         while (true) {
             int ansPos = sb.indexOf(Symbol.SYM_ANS.getRepr());
@@ -93,8 +93,8 @@ public class EqtSolver {
                 break;
             sb.replace(ansPos, ansPos + Symbol.SYM_ANS.getRepr().length(), MainActivity.CURSOR);
             try {
-                Symbol prevSym = this.mainActivity.getPrevSymbol(sb.toString());
-                Symbol nextSym = this.mainActivity.getNextSymbol(sb.toString());
+                Symbol prevSym = EqtBuilder.getPrevSymbol(sb.toString());
+                Symbol nextSym = EqtBuilder.getNextSymbol(sb.toString());
                 if (prevSym != null && (Symbol.isNum(prevSym) || prevSym.equals(Symbol.SYM_RIGHT_PAREN) || prevSym.equals(Symbol.SYM_DOT) || prevSym.equals(Symbol.SYM_ANS)))
                     return true;
                 if (nextSym != null && (Symbol.isNum(nextSym) || nextSym.equals(Symbol.SYM_LEFT_PAREN) || nextSym.equals(Symbol.SYM_DOT) || nextSym.equals(Symbol.SYM_ANS)))
@@ -102,7 +102,7 @@ public class EqtSolver {
                 sb.replace(0, sb.length(), removeCursor(sb.toString()));
             }
             catch (RuntimeException e) {
-                Log.e(MainActivity.TAG, e.getMessage());
+                Log.e(MainActivity.TAG, Log.getStackTraceString(e));
                 return true;
             }
         }
@@ -115,14 +115,14 @@ public class EqtSolver {
      *         {@link MainActivity#result result display} without the need to cast afterwards.
      */
     public String solve() {
-        StringBuilder sb = new StringBuilder(this.eqt);
+        StringBuffer sb = new StringBuffer(this.eqt);
         sb.replace(0, sb.length(), removeCursor(this.eqt));
         if (hasSyntaxError(sb.toString())) {
             this.err = EqtSolver.RESULT_SYN_ERR;
             return this.err;
         }
         sb.replace(0, sb.length(), sb.toString().replace(Symbol.SYM_ANS.getRepr(), this.prevResult));
-        sb = new StringBuilder(Symbol.toExpr(sb.toString()));
+        sb = new StringBuffer(Symbol.toExpr(sb.toString()));
         Log.i(MainActivity.TAG, "transformed eqt: " + sb.toString());
         Expression expr = new Expression(sb.toString());
 

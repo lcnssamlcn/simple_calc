@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.List;
 
 /**
- * all symbols that are renderable in the equation display
+ * This class defines all symbols that are renderable in the equation display
  * @author lcn
  */
 public enum Symbol {
@@ -208,7 +208,7 @@ public enum Symbol {
      *         {@link org.mariuszgromada.math.mxparser.Expression Expression}.
      */
     public static String toExpr(String eqt) {
-        StringBuilder sb = new StringBuilder(eqt);
+        StringBuffer sb = new StringBuffer(eqt);
         for (Symbol sym : Symbol.values()) {
             if (sym.getExprRepr() != null) {
                 sb.replace(0, sb.length(), sb.toString().replace(sym.getRepr(), sym.getExprRepr()));

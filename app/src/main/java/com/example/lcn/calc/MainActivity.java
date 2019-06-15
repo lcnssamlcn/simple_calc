@@ -8,8 +8,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import java.util.List;
-
 /**
  * simple calculator app
  * @author lcn
@@ -22,24 +20,26 @@ public class MainActivity extends AppCompatActivity {
      */
     public static final String CURSOR = "\u258A";
     /**
-     * maximum amount of characters (digits) that the result can show
+     * maximum amount of characters that the {@link #result result display} can show
      */
     public static final int MAX_RESULT_DISPLAY_WIDTH = 16;
-
     /**
-     * error indicating the cursor in the equation display is missing.
-     * It will be logged with this string if this error occurred.
+     * maximum amount of characters that the {@link #eqt equation display} can show
      */
-    public static final String ERR_CURSOR_MISSING = "Error: Cursor is missing";
-    /**
-     * error indicating the symbol is undefined due to unknown reason.
-     * It will be logged with this string if this error occurred.
-     */
-    public static final String ERR_SYM_UNDEFINED = "Error: Symbol is undefined";
+    public static final int MAX_EQT_DISPLAY_WIDTH = 32;
 
     /**
      * true if the user has previously computed a valid result (without error like
      * NaN, positive infinity and so on). Otherwise it will be false.
+     * <p>
+     * It is used for creating shortcuts such as
+     * <ul>
+     *     <li>when the user clicks an operator (plus symbol), the calculator will automatically
+     *     prepend "Ans" to let the user use the previous result.</li>
+     *     <li>when the user clicks a digit, the calculator will automatically erase the whole
+     *     equation and append the digit.</li>
+     * </ul>
+     * </p>
      */
     private boolean hasCalculated;
 
@@ -51,13 +51,14 @@ public class MainActivity extends AppCompatActivity {
      * calculation result display
      */
     TextView result;
-
     /**
-     * @return the current cursor pos in equation display
+     * responsible for deciphering which operation the user issued
+     * (inserting a math symbol / deleting the previous
+     * symbol / moving the cursor to the left / moving the cursor to the right) and rendering the
+     * "relative" equation to deal with the equation display overflow problem.
+     * @see EqtTextWatcher
      */
-    public int getCursorPos() {
-        return this.eqt.getText().toString().indexOf(MainActivity.CURSOR);
-    }
+    private EqtTextWatcher eqtTextWatcher;
 
     /**
      * @return the previous result shown in the result display. If error occurred, it will return 0.
@@ -81,91 +82,12 @@ public class MainActivity extends AppCompatActivity {
      * insert a new symbol to the equation display. If the cursor is missing, it will throw
      * <code>RuntimeException</code> and the insertion operation will be aborted.
      * @param symbol symbol to insert
-     * @throws RuntimeException if the cursor is missing
+     * @throws com.example.lcn.calc.exception.CursorMissingException if the cursor is missing
+     * @throws com.example.lcn.calc.exception.SymbolUndefinedException if the symbol before the cursor is not defined in {@link Symbol}
+     * @see EqtBuilder#insertSymbol(String, String)
      */
     public void insertSymbol(String symbol) {
-        String eqtStr = MainActivity.this.eqt.getText().toString();
-        int cursorPos = MainActivity.this.getCursorPos();
-        if (cursorPos == -1) {
-            resetDisplay();
-            throw new RuntimeException(MainActivity.ERR_CURSOR_MISSING);
-        }
-        StringBuilder sb = new StringBuilder();
-        if (cursorPos > 0)
-            sb.append(eqtStr.substring(0, cursorPos));
-        sb.append(symbol);
-        sb.append(MainActivity.CURSOR);
-        if (cursorPos + 1 < eqtStr.length())
-            sb.append(eqtStr.substring(cursorPos + 1));
-        MainActivity.this.eqt.setText(sb.toString());
-    }
-
-    /**
-     * @return the previous symbol of the cursor in the equation display. It must <b>NEVER</b> return
-     *         null.
-     */
-    public Symbol getPrevSymbol() {
-        return getPrevSymbol(MainActivity.this.eqt.getText().toString());
-    }
-
-    /**
-     * find the previous symbol of the cursor.
-     * @param eqt equation to search for
-     * @return the previous symbol of the cursor if exists. Otherwise return null.
-     * @throws RuntimeException if the cursor is missing
-     */
-    public Symbol getPrevSymbol(String eqt) {
-        List<Symbol> sortedSymbols = Symbol.sort();
-        int cursorPos = eqt.indexOf(MainActivity.CURSOR);
-        if (cursorPos == -1) {
-            resetDisplay();
-            throw new RuntimeException(MainActivity.ERR_CURSOR_MISSING);
-        }
-        for (Symbol sym : sortedSymbols) {
-            String symRepr = sym.getRepr();
-            if (cursorPos - symRepr.length() < 0)
-                continue;
-            if (eqt.substring(cursorPos - symRepr.length(), cursorPos).equals(symRepr))
-                return sym;
-        }
-        return null;
-    }
-
-    /**
-     * @return the next symbol of the cursor in the equation display. It must <b>NEVER</b> return
-     *         null.
-     */
-    public Symbol getNextSymbol() {
-        return getNextSymbol(MainActivity.this.eqt.getText().toString());
-    }
-
-    /**
-     * find the next symbol of the cursor.
-     * @param eqt equation to search for
-     * @return the next symbol of the cursor if exists. Otherwise return null.
-     * @throws RuntimeException if the cursor is missing
-     */
-    public Symbol getNextSymbol(String eqt) {
-        List<Symbol> sortedSymbols = Symbol.sort();
-        // Log.i(MainActivity.TAG, "sorted: " + sortedSymbols.toString());
-        int cursorPos = eqt.indexOf(MainActivity.CURSOR);
-        if (cursorPos == -1) {
-            resetDisplay();
-            throw new RuntimeException(MainActivity.ERR_CURSOR_MISSING);
-        }
-        for (Symbol sym : sortedSymbols) {
-            String symRepr = sym.getRepr();
-            int endSym = cursorPos + symRepr.length() + 1;
-            if (endSym == eqt.length()) {
-                if (eqt.substring(cursorPos + 1).equals(symRepr))
-                    return sym;
-            }
-            else if (endSym < eqt.length()) {
-                if (eqt.substring(cursorPos + 1, endSym).equals(symRepr))
-                    return sym;
-            }
-        }
-        return null;
+        MainActivity.this.eqt.setText(EqtTextWatcher.OP_INS + " " + symbol);
     }
 
     /**
@@ -177,12 +99,16 @@ public class MainActivity extends AppCompatActivity {
         if (sym == null)
             return;
         try {
-            if (this.hasCalculated)
-                MainActivity.this.eqt.setText(MainActivity.CURSOR);
-            insertSymbol(sym.getRepr());
+            if (this.hasCalculated) {
+                MainActivity.this.eqt.setText(String.format("%s %s", EqtTextWatcher.OP_SET, sym.getRepr() + MainActivity.CURSOR));
+            }
+            else {
+                insertSymbol(sym.getRepr());
+            }
         }
         catch (RuntimeException e) {
-            Log.e(MainActivity.TAG, e.getMessage());
+            Log.e(MainActivity.TAG, Log.getStackTraceString(e));
+            resetDisplay();
         }
         finally {
             if (this.hasCalculated)
@@ -200,15 +126,18 @@ public class MainActivity extends AppCompatActivity {
             return;
         try {
             if (this.hasCalculated) {
-                if (v.getId() != Symbol.SYM_ANS.getID())
-                    MainActivity.this.eqt.setText(Symbol.SYM_ANS.getRepr() + MainActivity.CURSOR);
+                if (v.getId() != Symbol.SYM_ANS.getID()) {
+                    MainActivity.this.eqt.setText(String.format("%s %s", EqtTextWatcher.OP_SET, Symbol.SYM_ANS.getRepr() + sym.getRepr() + MainActivity.CURSOR));
+                }
                 else
-                    MainActivity.this.eqt.setText(MainActivity.CURSOR);
+                    MainActivity.this.eqt.setText(String.format("%s %s", EqtTextWatcher.OP_SET, sym.getRepr() + MainActivity.CURSOR));
             }
-            insertSymbol(sym.getRepr());
+            else
+                insertSymbol(sym.getRepr());
         }
         catch (RuntimeException e) {
-            Log.e(MainActivity.TAG, e.getMessage());
+            Log.e(MainActivity.TAG, Log.getStackTraceString(e));
+            resetDisplay();
         }
         finally {
             if (this.hasCalculated)
@@ -233,129 +162,58 @@ public class MainActivity extends AppCompatActivity {
         btnLeft.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String eqtStr = MainActivity.this.eqt.getText().toString();
-                if (eqtStr.charAt(0) == MainActivity.CURSOR.charAt(0))
-                    return;
-
-                int cursorPos = getCursorPos();
-                if (cursorPos == -1) {
-                    Log.e(MainActivity.TAG, MainActivity.ERR_CURSOR_MISSING);
-                    resetDisplay();
-                    return;
-                }
-                Symbol sym = null;
                 try {
-                    sym = getPrevSymbol();
-                    if (sym == null) {
-                        Log.e(MainActivity.TAG, MainActivity.ERR_SYM_UNDEFINED);
-                        resetDisplay();
-                        return;
-                    }
+                    MainActivity.this.eqt.setText(EqtTextWatcher.OP_LEFT);
                 }
                 catch (RuntimeException e) {
-                    Log.e(MainActivity.TAG, e.getMessage());
+                    Log.e(MainActivity.TAG, Log.getStackTraceString(e));
                     resetDisplay();
-                    return;
                 }
-                Log.i(MainActivity.TAG, String.format("prev symbol: \"%s\"", sym.getRepr()));
-                StringBuilder sb = new StringBuilder();
-                if (cursorPos - sym.getRepr().length() > 0)
-                    sb.append(eqtStr.substring(0, cursorPos - sym.getRepr().length()));
-                sb.append(MainActivity.CURSOR);
-                sb.append(sym.getRepr());
-                if (cursorPos + 1 < eqtStr.length())
-                    sb.append(eqtStr.substring(cursorPos + 1));
-                MainActivity.this.eqt.setText(sb.toString());
-                if (MainActivity.this.hasCalculated)
-                    MainActivity.this.hasCalculated = false;
+                finally {
+                    if (MainActivity.this.hasCalculated)
+                        MainActivity.this.hasCalculated = false;
+                }
             }
         });
         Button btnRight = (Button) findViewById(R.id.btn_right);
         btnRight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String eqtStr = MainActivity.this.eqt.getText().toString();
-                if (eqtStr.charAt(eqtStr.length() - 1) == MainActivity.CURSOR.charAt(0))
-                    return;
-
-                int cursorPos = getCursorPos();
-                if (cursorPos == -1) {
-                    Log.e(MainActivity.TAG, MainActivity.ERR_CURSOR_MISSING);
-                    resetDisplay();
-                    return;
-                }
-                Symbol sym = null;
                 try {
-                    sym = getNextSymbol();
-                    if (sym == null) {
-                        Log.e(MainActivity.TAG, MainActivity.ERR_SYM_UNDEFINED);
-                        resetDisplay();
-                        return;
-                    }
+                    MainActivity.this.eqt.setText(EqtTextWatcher.OP_RIGHT);
                 }
                 catch (RuntimeException e) {
-                    Log.e(MainActivity.TAG, e.getMessage());
+                    Log.e(MainActivity.TAG, Log.getStackTraceString(e));
                     resetDisplay();
-                    return;
                 }
-                Log.i(MainActivity.TAG, String.format("next symbol: \"%s\"", sym.getRepr()));
-                StringBuilder sb = new StringBuilder();
-                if (cursorPos > 0)
-                    sb.append(eqtStr.substring(0, cursorPos));
-                sb.append(sym.getRepr());
-                sb.append(MainActivity.CURSOR);
-                if (cursorPos + sym.getRepr().length() + 1 < eqtStr.length())
-                    sb.append(eqtStr.substring(cursorPos + sym.getRepr().length() + 1));
-                MainActivity.this.eqt.setText(sb.toString());
-                if (MainActivity.this.hasCalculated)
-                    MainActivity.this.hasCalculated = false;
+                finally {
+                    if (MainActivity.this.hasCalculated)
+                        MainActivity.this.hasCalculated = false;
+                }
             }
         });
         Button btnDel = (Button) findViewById(R.id.btn_del);
         btnDel.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int cursorPos = getCursorPos();
-                if (cursorPos == -1) {
-                    Log.e(MainActivity.TAG, MainActivity.ERR_CURSOR_MISSING);
-                    resetDisplay();
-                    return;
-                }
-                if (cursorPos == 0)
-                    return;
-                Symbol sym = null;
                 try {
-                    sym = getPrevSymbol();
-                    if (sym == null) {
-                        Log.e(MainActivity.TAG, MainActivity.ERR_SYM_UNDEFINED);
-                        resetDisplay();
-                        return;
-                    }
+                    MainActivity.this.eqt.setText(EqtTextWatcher.OP_DEL);
                 }
                 catch (RuntimeException e) {
-                    Log.e(MainActivity.TAG, e.getMessage());
+                    Log.e(MainActivity.TAG, Log.getStackTraceString(e));
                     resetDisplay();
-                    return;
                 }
-
-                String eqtStr = MainActivity.this.eqt.getText().toString();
-                StringBuilder sb = new StringBuilder();
-                int end = cursorPos - sym.getRepr().length();
-                if (end > 0)
-                    sb.append(eqtStr.substring(0, end));
-                sb.append(MainActivity.CURSOR);
-                if (cursorPos + 1 < eqtStr.length())
-                    sb.append(eqtStr.substring(cursorPos + 1));
-                MainActivity.this.eqt.setText(sb.toString());
-                if (MainActivity.this.hasCalculated)
-                    MainActivity.this.hasCalculated = false;
+                finally {
+                    if (MainActivity.this.hasCalculated)
+                        MainActivity.this.hasCalculated = false;
+                }
             }
         });
         Button btnEqual = (Button) findViewById(R.id.btn_equal);
         btnEqual.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                EqtSolver eqtSolver = new EqtSolver(MainActivity.this, MainActivity.this.eqt.getText().toString(), MainActivity.this.getPrevResult());
+                EqtSolver eqtSolver = new EqtSolver(MainActivity.this, MainActivity.this.eqtTextWatcher.getEqt(), MainActivity.this.getPrevResult());
                 String result = eqtSolver.solve();
                 if (!eqtSolver.hasErr()) {
                     if (result.length() > MainActivity.MAX_RESULT_DISPLAY_WIDTH) {
@@ -383,14 +241,17 @@ public class MainActivity extends AppCompatActivity {
     private void initDisplay() {
         this.eqt = (TextView) findViewById(R.id.eqt);
         this.result = (TextView) findViewById(R.id.result);
+        this.eqtTextWatcher = new EqtTextWatcher(this);
+        this.eqt.addTextChangedListener(this.eqtTextWatcher);
         resetDisplay();
     }
 
     /**
      * reset the calculator display
      */
-    private void resetDisplay() {
-        this.eqt.setText(MainActivity.CURSOR);
+    public void resetDisplay() {
+        this.eqtTextWatcher.reset();
+        this.eqt.setText(String.format("%s %s", EqtTextWatcher.OP_SET, MainActivity.CURSOR));
         this.result.setText("0");
     }
 
