@@ -12,6 +12,7 @@ import android.view.MotionEvent;
  * button to move the cursor left or right. An important feature is added so that users can
  * hold the button and periodically move the cursor. Constantly clicking the navigation button
  * to move the cursor per unit step is no longer needed.
+ * @author lcn
  */
 public class NavButton extends AppCompatButton {
     /**

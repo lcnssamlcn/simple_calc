@@ -6,6 +6,7 @@ import android.util.Log;
 /**
  * This class helps create a flash effect on the {@link MainActivity#result result display} so that
  * the calculator will be more realistic.
+ * @author lcn
  */
 public class FlashEffect {
     /**

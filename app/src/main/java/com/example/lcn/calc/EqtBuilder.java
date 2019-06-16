@@ -7,6 +7,7 @@ import java.util.List;
 
 /**
  * This namespace provides a set of useful functions for manipulating the equation.
+ * @author lcn
  */
 public class EqtBuilder {
     /**
