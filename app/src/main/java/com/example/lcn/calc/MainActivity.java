@@ -158,10 +158,10 @@ public class MainActivity extends AppCompatActivity {
                     MainActivity.this.hasCalculated = false;
             }
         });
-        Button btnLeft = (Button) findViewById(R.id.btn_left);
-        btnLeft.setOnClickListener(new View.OnClickListener() {
+        NavButton btnLeft = (NavButton) findViewById(R.id.btn_left);
+        btnLeft.setOnHoldListener(new NavButton.OnHoldListener() {
             @Override
-            public void onClick(View view) {
+            public void onHold() {
                 try {
                     MainActivity.this.eqt.setText(EqtTextWatcher.OP_LEFT);
                 }
@@ -175,10 +175,10 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-        Button btnRight = (Button) findViewById(R.id.btn_right);
-        btnRight.setOnClickListener(new View.OnClickListener() {
+        NavButton btnRight = (NavButton) findViewById(R.id.btn_right);
+        btnRight.setOnHoldListener(new NavButton.OnHoldListener() {
             @Override
-            public void onClick(View view) {
+            public void onHold() {
                 try {
                     MainActivity.this.eqt.setText(EqtTextWatcher.OP_RIGHT);
                 }

@@ -42,12 +42,12 @@
         style="@style/btn.general"
         android:text="@string/btn_AC" />
 
-    <Button
+    <com.example.lcn.calc.NavButton
         android:id="@+id/btn_left"
         style="@style/btn.general"
         android:text="@string/btn_left" />
 
-    <Button
+    <com.example.lcn.calc.NavButton
         android:id="@+id/btn_right"
         style="@style/btn.general"
         android:text="@string/btn_right" />
