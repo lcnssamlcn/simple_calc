@@ -31,7 +31,7 @@ public class NavButton extends AppCompatButton {
     /**
      * When the user clicks and holds this navigation button, a new thread calling
      * {@link OnHoldListener#onHold()} will be generated.
-     * It will base on this value to call the {@link OnHoldListener#onHold()} periodically.
+     * It will base on this value (in ms) to call the {@link OnHoldListener#onHold()} periodically.
      */
     public static final long HOLD_COOLDOWN_INTERVAL = 100;
     /**

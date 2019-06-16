@@ -1,5 +1,6 @@
 package com.example.lcn.calc;
 
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
@@ -59,6 +60,11 @@ public class MainActivity extends AppCompatActivity {
      * @see EqtTextWatcher
      */
     private EqtTextWatcher eqtTextWatcher;
+
+    /**
+     * singleton instance for generating a flash effect in the {@link #result resukt display}
+     */
+    private FlashEffect flashEffect;
 
     /**
      * @return the previous result shown in the result display. If error occurred, it will return 0.
@@ -153,9 +159,21 @@ public class MainActivity extends AppCompatActivity {
         btnAC.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                resetDisplay();
-                if (MainActivity.this.hasCalculated)
-                    MainActivity.this.hasCalculated = false;
+                if (flashEffect == null)
+                    flashEffect = new FlashEffect(MainActivity.this);
+                flashEffect.run(new FlashEffect.IFlashEffect() {
+                    @Override
+                    public void postCallback(Handler handler) {
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                resetDisplay();
+                            }
+                        });
+                        if (MainActivity.this.hasCalculated)
+                            MainActivity.this.hasCalculated = false;
+                    }
+                });
             }
         });
         NavButton btnLeft = (NavButton) findViewById(R.id.btn_left);
@@ -215,22 +233,53 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 EqtSolver eqtSolver = new EqtSolver(MainActivity.this, MainActivity.this.eqtTextWatcher.getEqt(), MainActivity.this.getPrevResult());
                 String result = eqtSolver.solve();
-                if (!eqtSolver.hasErr()) {
-                    if (result.length() > MainActivity.MAX_RESULT_DISPLAY_WIDTH) {
-                        int expPos = result.indexOf("E");
-                        if (expPos == -1)
-                            MainActivity.this.result.setText(result.substring(0, MainActivity.MAX_RESULT_DISPLAY_WIDTH));
+                if (flashEffect == null)
+                    flashEffect = new FlashEffect(MainActivity.this);
+                flashEffect.run(new FlashEffect.IFlashEffect() {
+                    @Override
+                    public void postCallback(Handler handler) {
+                        if (!eqtSolver.hasErr()) {
+                            if (result.length() > MainActivity.MAX_RESULT_DISPLAY_WIDTH) {
+                                int expPos = result.indexOf("E");
+                                if (expPos == -1) {
+                                    handler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            MainActivity.this.result.setText(result.substring(0, MainActivity.MAX_RESULT_DISPLAY_WIDTH));
+
+                                        }
+                                    });
+                                }
+                                else {
+                                    int expW = result.length() - expPos;
+                                    handler.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            MainActivity.this.result.setText(result.substring(0, MainActivity.MAX_RESULT_DISPLAY_WIDTH - expW) + result.substring(expPos));
+                                        }
+                                    });
+                                }
+                            }
+                            else {
+                                handler.post(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        MainActivity.this.result.setText(result);
+                                    }
+                                });
+                            }
+                            MainActivity.this.hasCalculated = true;
+                        }
                         else {
-                            int expW = result.length() - expPos;
-                            MainActivity.this.result.setText(result.substring(0, MainActivity.MAX_RESULT_DISPLAY_WIDTH - expW) + result.substring(expPos));
+                            handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    MainActivity.this.result.setText(result);
+                                }
+                            });
                         }
                     }
-                    else
-                        MainActivity.this.result.setText(result);
-                    MainActivity.this.hasCalculated = true;
-                }
-                else
-                    MainActivity.this.result.setText(result);
+                });
             }
         });
     }
