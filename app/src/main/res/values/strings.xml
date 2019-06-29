@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">calc</string>
+    <string name="app_name">Simple Calculator</string>
     <string name="btn_AC">AC</string>
     <string name="btn_left">\u2190</string>
     <string name="btn_right">\u2192</string>
