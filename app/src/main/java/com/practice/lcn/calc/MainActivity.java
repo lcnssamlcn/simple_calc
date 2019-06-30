@@ -12,7 +12,7 @@ import android.widget.TextView;
 /**
  * simple calculator app
  * @author lcn
- * @version 1.0
+ * @version 1.0.1
  */
 public class MainActivity extends AppCompatActivity {
     static final String TAG = "MainActivity";
@@ -28,6 +28,11 @@ public class MainActivity extends AppCompatActivity {
      * maximum amount of characters that the {@link #eqt equation display} can show
      */
     public static final int MAX_EQT_DISPLAY_WIDTH = 32;
+
+    /**
+     * duration to wait for the equation result to synchronize
+     */
+    public static final int RESULT_SYNC_DURATION = 25;
 
     /**
      * true if the user has previously computed a valid result (without error like
@@ -62,15 +67,11 @@ public class MainActivity extends AppCompatActivity {
     private EqtTextWatcher eqtTextWatcher;
 
     /**
-     * singleton instance for generating a flash effect in the {@link #result resukt display}
-     */
-    private FlashEffect flashEffect;
-
-    /**
      * @return the previous result shown in the result display. If error occurred, it will return 0.
      */
     public String getPrevResult() {
         String prevResult = this.result.getText().toString();
+        Log.i(MainActivity.TAG, "prevResult: " + prevResult);
         if (EqtSolver.hadErr(prevResult))
             return "0";
         return prevResult;
@@ -159,17 +160,17 @@ public class MainActivity extends AppCompatActivity {
         btnAC.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (flashEffect == null)
-                    flashEffect = new FlashEffect(MainActivity.this);
+                FlashEffect flashEffect = FlashEffect.getInstance(MainActivity.this);
                 flashEffect.run(new FlashEffect.IFlashEffect() {
                     @Override
                     public void postCallback(Handler handler) {
-                        handler.post(new Runnable() {
+                        handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
                                 resetDisplay();
+                                flashEffect.setCompleted(true);
                             }
-                        });
+                        }, MainActivity.RESULT_SYNC_DURATION);
                         if (MainActivity.this.hasCalculated)
                             MainActivity.this.hasCalculated = false;
                     }
@@ -231,10 +232,13 @@ public class MainActivity extends AppCompatActivity {
         btnEqual.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                FlashEffect flashEffect = FlashEffect.getInstance(MainActivity.this);
+                Log.i(MainActivity.TAG, "completed: " + flashEffect.isCompleted());
+                if (!flashEffect.isCompleted())
+                    return;
+
                 EqtSolver eqtSolver = new EqtSolver(MainActivity.this, MainActivity.this.eqtTextWatcher.getEqt(), MainActivity.this.getPrevResult());
                 String result = eqtSolver.solve();
-                if (flashEffect == null)
-                    flashEffect = new FlashEffect(MainActivity.this);
                 flashEffect.run(new FlashEffect.IFlashEffect() {
                     @Override
                     public void postCallback(Handler handler) {
@@ -242,41 +246,44 @@ public class MainActivity extends AppCompatActivity {
                             if (result.length() > MainActivity.MAX_RESULT_DISPLAY_WIDTH) {
                                 int expPos = result.indexOf("E");
                                 if (expPos == -1) {
-                                    handler.post(new Runnable() {
+                                    handler.postDelayed(new Runnable() {
                                         @Override
                                         public void run() {
                                             MainActivity.this.result.setText(result.substring(0, MainActivity.MAX_RESULT_DISPLAY_WIDTH));
-
+                                            flashEffect.setCompleted(true);
                                         }
-                                    });
+                                    }, MainActivity.RESULT_SYNC_DURATION);
                                 }
                                 else {
                                     int expW = result.length() - expPos;
-                                    handler.post(new Runnable() {
+                                    handler.postDelayed(new Runnable() {
                                         @Override
                                         public void run() {
                                             MainActivity.this.result.setText(result.substring(0, MainActivity.MAX_RESULT_DISPLAY_WIDTH - expW) + result.substring(expPos));
+                                            flashEffect.setCompleted(true);
                                         }
-                                    });
+                                    }, MainActivity.RESULT_SYNC_DURATION);
                                 }
                             }
                             else {
-                                handler.post(new Runnable() {
+                                handler.postDelayed(new Runnable() {
                                     @Override
                                     public void run() {
                                         MainActivity.this.result.setText(result);
+                                        flashEffect.setCompleted(true);
                                     }
-                                });
+                                }, MainActivity.RESULT_SYNC_DURATION);
                             }
                             MainActivity.this.hasCalculated = true;
                         }
                         else {
-                            handler.post(new Runnable() {
+                            handler.postDelayed(new Runnable() {
                                 @Override
                                 public void run() {
                                     MainActivity.this.result.setText(result);
+                                    flashEffect.setCompleted(true);
                                 }
-                            });
+                            }, MainActivity.RESULT_SYNC_DURATION);
                         }
                     }
                 });

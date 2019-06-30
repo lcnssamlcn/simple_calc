@@ -131,7 +131,7 @@ public class EqtSolver {
             return this.err;
         }
         double result = expr.calculate();
-        if (result == Double.NaN) {
+        if (Double.isNaN(result)) {
             this.err = EqtSolver.RESULT_NAN;
             return this.err;
         }
