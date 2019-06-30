@@ -121,6 +121,8 @@ public class EqtSolver {
             this.err = EqtSolver.RESULT_SYN_ERR;
             return this.err;
         }
+        if (this.prevResult.matches("^-\\d+(\\.\\d+)?(E-?\\d+)?$"))
+            this.prevResult = "(" + this.prevResult + ")";
         sb.replace(0, sb.length(), sb.toString().replace(Symbol.SYM_ANS.getRepr(), this.prevResult));
         sb = new StringBuffer(Symbol.toExpr(sb.toString()));
         Log.i(MainActivity.TAG, "transformed eqt: " + sb.toString());
