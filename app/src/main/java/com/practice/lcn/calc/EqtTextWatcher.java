@@ -1,5 +1,6 @@
 package com.practice.lcn.calc;
 
+import android.graphics.Paint;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -37,8 +38,7 @@ public class EqtTextWatcher implements TextWatcher {
     /**
      * a 2-element tuple recording the view range in the {@link #eqt equation}. It is used for
      * dealing with the equation text overflow problem. THe first element records the starting index
-     * of the {@link #eqt equation}; The second element records the ending index. <b>Note</b> that
-     * (second element - first element + 1) must be equal to {@link MainActivity#MAX_EQT_DISPLAY_WIDTH}.
+     * of the {@link #eqt equation}; The second element records the ending index.
      */
     private int[] window;
     /**
@@ -168,6 +168,43 @@ public class EqtTextWatcher implements TextWatcher {
     }
 
     /**
+     * probe the {@link #window starting index of the window} so that the window will
+     * maintain showing the equation in device's screen width
+     */
+    private void probeWindowStart() {
+        Paint paint = mainActivity.eqt.getPaint();
+        for (int i = this.window[1] - 1; i >= 0; i--) {
+            int eqtWidth = (int) Math.floor(paint.measureText(this.eqt.substring(i, this.window[1] + 1)));
+            if (eqtWidth > MainActivity.DEVICE_WIDTH) {
+                this.window[0] = i + 1;
+                break;
+            }
+            if (i == 0)
+                this.window[0] = 0;
+        }
+    }
+
+    /**
+     * probe the {@link #window ending index of the window} so that the window will
+     * maintain showing the equation in device's screen width
+     */
+    private void probeWindowEnd() {
+        Paint paint = mainActivity.eqt.getPaint();
+        for (int i = this.window[0] + 1; i < this.eqt.length(); i++) {
+            int eqtWidth = (int) Math.floor(paint.measureText(this.eqt.substring(this.window[0], i)));
+            if (eqtWidth > MainActivity.DEVICE_WIDTH) {
+                // rectify +1 in newText#replace()
+                this.window[1] = i - 2;
+                break;
+            }
+            if (i == this.eqt.length() - 1) {
+                // rectify +1 in newText#replace()
+                this.window[1] = i - 1;
+            }
+        }
+    }
+
+    /**
      * executed before the {@link MainActivity#eqt equation} is replaced with new text
      * @param oldText old equation text
      * @param start unused
@@ -228,37 +265,30 @@ public class EqtTextWatcher implements TextWatcher {
         }
 
         Log.i(MainActivity.TAG, String.format("on: eqt = \"%s\"", this.eqt));
-        if (this.eqt.length() <= MainActivity.MAX_EQT_DISPLAY_WIDTH) {
+        Paint paint = mainActivity.eqt.getPaint();
+        int eqtWidth = (int) Math.floor(paint.measureText(this.eqt));
+        Log.i(MainActivity.TAG, "eqt width = " + eqtWidth);
+        //Log.i(MainActivity.TAG, "device width = " + MainActivity.DEVICE_WIDTH);
+        if (eqtWidth <= MainActivity.DEVICE_WIDTH) {
             this.window[0] = 0;
             this.window[1] = this.eqt.length() - 1;
         }
         else {
             try {
-                int cursorRelPos = 0;
-                if (this.window[1] >= this.eqt.length() - 1) {
-                    this.window[1] = this.eqt.length() - 1;
-                    cursorRelPos = EqtBuilder.getCursorPosNoException(this.eqt.substring(this.window[0]));
+                int cursorAbsPos = EqtBuilder.getCursorPos(this.eqt);
+                if (cursorAbsPos < this.window[0]) {
+                    this.window[0] = cursorAbsPos;
+                    probeWindowEnd();
                 }
-                else
-                    cursorRelPos = EqtBuilder.getCursorPosNoException(this.eqt.substring(this.window[0], this.window[1] + 1));
-                if (cursorRelPos == -1) {
-                    int cursorAbsPos = EqtBuilder.getCursorPos(this.eqt);
-                    if (cursorAbsPos - this.window[0] < 0) {
-                        this.window[0] = cursorAbsPos;
-                        this.window[1] = cursorAbsPos + MainActivity.MAX_EQT_DISPLAY_WIDTH - 1;
-                        if (this.window[1] >= this.eqt.length()) {
-                            this.window[1] = this.eqt.length() - 1;
-                            this.window[0] = this.window[1] - MainActivity.MAX_EQT_DISPLAY_WIDTH + 1;
-                        }
-                    }
-                    else if (cursorAbsPos - this.window[1] > 0) {
-                        this.window[1] = cursorAbsPos;
-                        this.window[0] = cursorAbsPos - MainActivity.MAX_EQT_DISPLAY_WIDTH + 1;
-                        if (this.window[0] < 0) {
-                            this.window[0] = 0;
-                            this.window[1] = MainActivity.MAX_EQT_DISPLAY_WIDTH - 1;
-                        }
-                    }
+                else if (cursorAbsPos > this.window[1]) {
+                    this.window[1] = cursorAbsPos;
+                    probeWindowStart();
+                }
+                else if (this.window[0] <= cursorAbsPos && cursorAbsPos <= this.window[1]) {
+                    if (this.window[1] >= this.eqt.length())
+                        this.window[1] = this.eqt.length() - 1;
+                    if (this.window[0] < 0)
+                        this.window[0] = 0;
                 }
             }
             catch (RuntimeException e) {
@@ -266,6 +296,7 @@ public class EqtTextWatcher implements TextWatcher {
                 throw e;
             }
         }
+        Log.i(MainActivity.TAG, String.format("win = [%d, %d]", window[0], window[1]));
     }
 
     /**

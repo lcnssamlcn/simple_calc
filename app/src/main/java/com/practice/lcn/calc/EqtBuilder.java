@@ -132,7 +132,9 @@ public class EqtBuilder {
     }
 
     /**
-     * find the previous symbol of the cursor.
+     * find the previous symbol of the cursor. It matches the symbol with the longest length.
+     * For example, if the symbol matches both <code>^</code> and <code>^(</code>, it will match
+     * symbol <code>^(</code> since it has the longest length.
      * @param eqt equation to search for
      * @return the previous symbol of the cursor if exists. If the cursor is at the front of the
      *         equation, it will return null.
@@ -156,7 +158,9 @@ public class EqtBuilder {
     }
 
     /**
-     * find the next symbol of the cursor.
+     * find the next symbol of the cursor. It matches the symbol with the longest length.
+     * For example, if the symbol matches both <code>^</code> and <code>^(</code>, it will match
+     * symbol <code>^(</code> since it has the longest length.
      * @param eqt equation to search for
      * @return the next symbol of the cursor if exists. If the cursor is at the end of the equation,
      *         it will return null.

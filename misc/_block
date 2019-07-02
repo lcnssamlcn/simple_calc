@@ -84,3 +84,44 @@ public Symbol getNextSymbol() {
     return EqtBuilder.getNextSymbol(MainActivity.this.eqt.getText().toString());
 }
 // ----------------------------------------
+
+// ----- EqtTextWatcher#onTextChanged() -----
+if (this.eqt.length() <= MainActivity.MAX_EQT_DISPLAY_WIDTH) {
+    this.window[0] = 0;
+    this.window[1] = this.eqt.length() - 1;
+}
+else {
+    try {
+        int cursorRelPos = 0;
+        if (this.window[1] >= this.eqt.length() - 1) {
+            this.window[1] = this.eqt.length() - 1;
+            cursorRelPos = EqtBuilder.getCursorPosNoException(this.eqt.substring(this.window[0]));
+        }
+        else
+            cursorRelPos = EqtBuilder.getCursorPosNoException(this.eqt.substring(this.window[0], this.window[1] + 1));
+        if (cursorRelPos == -1) {
+            int cursorAbsPos = EqtBuilder.getCursorPos(this.eqt);
+            if (cursorAbsPos - this.window[0] < 0) {
+                this.window[0] = cursorAbsPos;
+                this.window[1] = cursorAbsPos + MainActivity.MAX_EQT_DISPLAY_WIDTH - 1;
+                if (this.window[1] >= this.eqt.length()) {
+                    this.window[1] = this.eqt.length() - 1;
+                    this.window[0] = this.window[1] - MainActivity.MAX_EQT_DISPLAY_WIDTH + 1;
+                }
+            }
+            else if (cursorAbsPos - this.window[1] > 0) {
+                this.window[1] = cursorAbsPos;
+                this.window[0] = cursorAbsPos - MainActivity.MAX_EQT_DISPLAY_WIDTH + 1;
+                if (this.window[0] < 0) {
+                    this.window[0] = 0;
+                    this.window[1] = MainActivity.MAX_EQT_DISPLAY_WIDTH - 1;
+                }
+            }
+        }
+    }
+    catch (RuntimeException e) {
+        this.errOccurred = true;
+        throw e;
+    }
+}
+// ------------------------------------------

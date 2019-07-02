@@ -1,10 +1,12 @@
 package com.practice.lcn.calc;
 
+import android.graphics.Point;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
+import android.view.Display;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -12,7 +14,7 @@ import android.widget.TextView;
 /**
  * simple calculator app
  * @author lcn
- * @version 1.0.1
+ * @version 1.1.0
  */
 public class MainActivity extends AppCompatActivity {
     static final String TAG = "MainActivity";
@@ -25,9 +27,9 @@ public class MainActivity extends AppCompatActivity {
      */
     public static final int MAX_RESULT_DISPLAY_WIDTH = 16;
     /**
-     * maximum amount of characters that the {@link #eqt equation display} can show
+     * device screen width
      */
-    public static final int MAX_EQT_DISPLAY_WIDTH = 32;
+    public static int DEVICE_WIDTH;
 
     /**
      * duration to wait for the equation result to synchronize
@@ -295,6 +297,10 @@ public class MainActivity extends AppCompatActivity {
      * initialize the calculator display
      */
     private void initDisplay() {
+        Display display = getWindowManager().getDefaultDisplay();
+        Point size = new Point();
+        display.getSize(size);
+        MainActivity.DEVICE_WIDTH = size.x;
         this.eqt = (TextView) findViewById(R.id.eqt);
         this.result = (TextView) findViewById(R.id.result);
         this.eqtTextWatcher = new EqtTextWatcher(this);
